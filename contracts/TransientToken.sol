@@ -16,13 +16,13 @@ contract TransientToken is ERC20, ITransientApproval {
     constructor(string memory name_, string memory symbol_) ERC20(name_, symbol_) {}
 
     /**
-     * @dev See {ITransientApproval-approveTransiently}.
+     * @dev See {ITransientApproval-transientApprove}.
      * Transient allowances are not persisted between transactions.
      *
      * NOTE: If `value` is the maximum `uint256`, the transient allowance is not updated on
      * `transferFrom`. This is semantically equivalent to an infinite approval.
      */
-    function approveTransiently(address spender, uint256 value) public virtual returns (bool) {
+    function transientApprove(address spender, uint256 value) public virtual returns (bool) {
         address owner = _msgSender();
 
         if (owner == address(0)) {
@@ -39,7 +39,7 @@ contract TransientToken is ERC20, ITransientApproval {
     /**
      * @dev See {IERC20-allowance}.
      * Transient allowances are added to the permanent allowances.
-     * This value changes when {approve}, {approveTransiently} or {transferFrom} are called.
+     * This value changes when {approve}, {transientApprove} or {transferFrom} are called.
      */
     function allowance(address owner, address spender) public view virtual override returns (uint256) {
         uint256 transientAllowance = _getTransientAllowance(owner, spender);

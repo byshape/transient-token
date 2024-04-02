@@ -8,5 +8,5 @@ interface ITransientApproval {
      *
      * Returns a boolean value indicating whether the operation succeeded.
      */
-    function approveTransiently(address spender, uint256 value) external returns (bool);
+    function transientApprove(address spender, uint256 value) external returns (bool);
 }

@@ -35,7 +35,7 @@ contract TransientTokenTest is Test {
         uint256 amountToSpend = 5 ether;
 
         vm.prank(alice);
-        ITransientApproval(transientToken).approveTransiently(address(this), amountToApprove);
+        ITransientApproval(transientToken).transientApprove(address(this), amountToApprove);
         IERC20(transientToken).transferFrom(alice, bob, amountToSpend);
 
         assertEq(IERC20(transientToken).allowance(alice, address(this)), amountToApprove - amountToSpend);
@@ -75,7 +75,7 @@ contract TransientTokenTest is Test {
 
         vm.startPrank(alice);
         IERC20(transientToken).approve(address(this), amountToApprove);
-        ITransientApproval(transientToken).approveTransiently(address(this), amountToApproveTransiently);
+        ITransientApproval(transientToken).transientApprove(address(this), amountToApproveTransiently);
         vm.stopPrank();
 
         assertEq(IERC20(transientToken).allowance(alice, address(this)), amountToApprove + amountToApproveTransiently);
@@ -98,7 +98,7 @@ contract TransientTokenTest is Test {
 
         vm.startPrank(alice);
         IERC20(transientToken).approve(address(this), amountToApprove);
-        ITransientApproval(transientToken).approveTransiently(address(this), amountToApproveTransiently);
+        ITransientApproval(transientToken).transientApprove(address(this), amountToApproveTransiently);
         vm.stopPrank();
 
         assertEq(IERC20(transientToken).allowance(alice, address(this)), amountToApprove + amountToApproveTransiently);
@@ -118,11 +118,11 @@ contract TransientTokenTest is Test {
     function testDoenNotApproveFromZero() public {
         vm.expectRevert(abi.encodePacked(IERC20Errors.ERC20InvalidApprover.selector, abi.encode(address(0))));
         vm.prank(address(0));
-        ITransientApproval(transientToken).approveTransiently(address(0), 10 ether);
+        ITransientApproval(transientToken).transientApprove(address(0), 10 ether);
     }
 
     function testDoenNotApproveToZero() public {
         vm.expectRevert(abi.encodePacked(IERC20Errors.ERC20InvalidSpender.selector, abi.encode(address(0))));
-        ITransientApproval(transientToken).approveTransiently(address(0), 10 ether);
+        ITransientApproval(transientToken).transientApprove(address(0), 10 ether);
     }
 }
