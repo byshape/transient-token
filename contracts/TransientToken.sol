@@ -54,7 +54,7 @@ contract TransientToken is ERC20, ITransientApproval {
     function _spendAllowance(address owner, address spender, uint256 value) internal virtual override {
         uint256 transientAllowance = _getTransientAllowance(owner, spender);
         if (transientAllowance != type(uint256).max) {
-            uint256 available = value <= transientAllowance ? value : transientAllowance;
+            uint256 available = Math.min(value, transientAllowance);
             _setTransientAllowance(owner, spender, transientAllowance - available);
             value -= available;
             if (value > 0) {
