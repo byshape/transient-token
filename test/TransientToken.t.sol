@@ -6,7 +6,7 @@ import { IERC20Errors } from "openzeppelin-contracts/contracts/interfaces/draft-
 
 import { Test } from "forge-std/Test.sol";
 
-import { ITransientApproval } from "contracts/ITransientApproval.sol";
+import { ITemporaryApproval } from "contracts/ITemporaryApproval.sol";
 
 import { TransientTokenMock } from "test/mocks/TransientTokenMock.sol";
 
@@ -25,7 +25,7 @@ contract TransientTokenTest is Test {
         vm.label(transientToken, "transientToken");
     }
 
-    function test_ApproveTransiently() public {
+    function test_ApproveTemporarily() public {
         assertEq(IERC20(transientToken).allowance(alice, address(this)), 0);
         assertEq(IERC20(transientToken).balanceOf(bob), 0);
 
@@ -35,7 +35,7 @@ contract TransientTokenTest is Test {
         uint256 amountToSpend = 5 ether;
 
         vm.prank(alice);
-        ITransientApproval(transientToken).transientApprove(address(this), amountToApprove);
+        ITemporaryApproval(transientToken).temporaryApprove(address(this), amountToApprove);
         IERC20(transientToken).transferFrom(alice, bob, amountToSpend);
 
         assertEq(IERC20(transientToken).allowance(alice, address(this)), amountToApprove - amountToSpend);
@@ -70,18 +70,18 @@ contract TransientTokenTest is Test {
         uint256 balanceAlice = IERC20(transientToken).balanceOf(alice);
 
         uint256 amountToApprove = 10 ether;
-        uint256 amountToApproveTransiently = 5 ether;
+        uint256 amountToApproveTemporarily = 5 ether;
         uint256 amountToSpend = 15 ether;
 
         vm.startPrank(alice);
         IERC20(transientToken).approve(address(this), amountToApprove);
-        ITransientApproval(transientToken).transientApprove(address(this), amountToApproveTransiently);
+        ITemporaryApproval(transientToken).temporaryApprove(address(this), amountToApproveTemporarily);
         vm.stopPrank();
 
-        assertEq(IERC20(transientToken).allowance(alice, address(this)), amountToApprove + amountToApproveTransiently);
+        assertEq(IERC20(transientToken).allowance(alice, address(this)), amountToApprove + amountToApproveTemporarily);
         IERC20(transientToken).transferFrom(alice, bob, amountToSpend);
 
-        assertEq(IERC20(transientToken).allowance(alice, address(this)), amountToApprove + amountToApproveTransiently - amountToSpend);
+        assertEq(IERC20(transientToken).allowance(alice, address(this)), amountToApprove + amountToApproveTemporarily - amountToSpend);
         assertEq(IERC20(transientToken).balanceOf(alice), balanceAlice - amountToSpend);
         assertEq(IERC20(transientToken).balanceOf(bob), amountToSpend);
     }
@@ -93,24 +93,24 @@ contract TransientTokenTest is Test {
         uint256 balanceAlice = IERC20(transientToken).balanceOf(alice);
 
         uint256 amountToApprove = 10 ether;
-        uint256 amountToApproveTransiently = 5 ether;
+        uint256 amountToApproveTemporarily = 5 ether;
         uint256 amountToSpend = 25 ether;
 
         vm.startPrank(alice);
         IERC20(transientToken).approve(address(this), amountToApprove);
-        ITransientApproval(transientToken).transientApprove(address(this), amountToApproveTransiently);
+        ITemporaryApproval(transientToken).temporaryApprove(address(this), amountToApproveTemporarily);
         vm.stopPrank();
 
-        assertEq(IERC20(transientToken).allowance(alice, address(this)), amountToApprove + amountToApproveTransiently);
+        assertEq(IERC20(transientToken).allowance(alice, address(this)), amountToApprove + amountToApproveTemporarily);
         vm.expectRevert(
             abi.encodePacked(
                 IERC20Errors.ERC20InsufficientAllowance.selector,
-                abi.encode(address(this), amountToApprove, amountToSpend - amountToApproveTransiently)
+                abi.encode(address(this), amountToApprove, amountToSpend - amountToApproveTemporarily)
             )
         );
         IERC20(transientToken).transferFrom(alice, bob, amountToSpend);
 
-        assertEq(IERC20(transientToken).allowance(alice, address(this)), amountToApprove + amountToApproveTransiently);
+        assertEq(IERC20(transientToken).allowance(alice, address(this)), amountToApprove + amountToApproveTemporarily);
         assertEq(IERC20(transientToken).balanceOf(alice), balanceAlice);
         assertEq(IERC20(transientToken).balanceOf(bob), 0);
     }
@@ -118,11 +118,11 @@ contract TransientTokenTest is Test {
     function testDoenNotApproveFromZero() public {
         vm.expectRevert(abi.encodePacked(IERC20Errors.ERC20InvalidApprover.selector, abi.encode(address(0))));
         vm.prank(address(0));
-        ITransientApproval(transientToken).transientApprove(address(0), 10 ether);
+        ITemporaryApproval(transientToken).temporaryApprove(address(0), 10 ether);
     }
 
     function testDoenNotApproveToZero() public {
         vm.expectRevert(abi.encodePacked(IERC20Errors.ERC20InvalidSpender.selector, abi.encode(address(0))));
-        ITransientApproval(transientToken).transientApprove(address(0), 10 ether);
+        ITemporaryApproval(transientToken).temporaryApprove(address(0), 10 ether);
     }
 }
