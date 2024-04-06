@@ -4,13 +4,13 @@ pragma solidity ^0.8.25;
 import { ERC20 } from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 import { Math } from "openzeppelin-contracts/contracts/utils/math/Math.sol";
 
-import { ITemporaryApproval } from "contracts/ITemporaryApproval.sol";
+import { IERC7674 } from "contracts/IERC7674.sol";
 
 /**
  * @title Token with temporary approvals
  * @notice Contract that implements temporary approvals for ERC20 tokens.
  */
-contract TransientToken is ERC20, ITemporaryApproval {
+contract TransientToken is ERC20, IERC7674 {
     bytes32 private constant _TEMPORARY_ALLOWANCES_SLOT = keccak256("_temporaryAllowances");
 
     constructor(string memory name_, string memory symbol_) ERC20(name_, symbol_) {}
@@ -39,15 +39,15 @@ contract TransientToken is ERC20, ITemporaryApproval {
     /**
      * @dev See {IERC20-allowance}.
      * Temporary allowances are added to the permanent allowances.
-     * This value changes when {approve}, {temporaryApprove} or {transferFrom} are called.
+     * This value changes when {IERC20-approve}, {IERC7674-temporaryApprove} or {IERC20-transferFrom} are called.
      */
     function allowance(address owner, address spender) public view virtual override returns (uint256) {
         uint256 temporaryAllowance = _getTemporaryAllowance(owner, spender);
         if (temporaryAllowance == type(uint256).max) {
             return temporaryAllowance;
         }
-        (bool success, uint256 allowed) = Math.tryAdd(temporaryAllowance, super.allowance(owner, spender));
-        return success ? allowed : type(uint256).max;
+        (bool success, uint256 amount) = Math.tryAdd(temporaryAllowance, super.allowance(owner, spender));
+        return success ? amount : type(uint256).max;
     }
 
     /// @dev The permanent allowance can only be spent after the temporary allowance has been exhausted.
